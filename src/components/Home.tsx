@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
 import { RouteComponentProps, withRouter } from 'react-router';
-import ContentCard from './ContentCard';
+import ContentCard, { IContents } from './ContentCard';
 
 const styles: StyleRules<'top'|'contents'> = {
     top: {
@@ -23,6 +23,23 @@ const styles: StyleRules<'top'|'contents'> = {
 
 type ClassNames = keyof typeof styles;
 
+const constantsList: IContents[] = [ 
+    {
+        img: require('../images/emh.png'),
+        title: 'endless monster house',
+        description: 'android 2d game ',
+        techs: [{name:'HTML5'},{name:'Javascript'},{name:'Three.js'},{name:'Cordova'},],
+        link: 'https://tmknym.itch.io/endless-monster-house'
+    },
+    {
+        img: require('../images/rd.png'),
+        title: '青空速読',
+        description: '青空文庫でお手軽、速読トレーニング',
+        techs: [{name:'HTML5'},{name:'Javascript'},{name: 'Typescript'},{name:'Cordova'},{name: 'nodejs'}],
+        link: 'https://play.google.com/store/apps/details?id=io.zitan.sokudoku&hl=lo'
+    },
+];
+
 
 class Home extends React.Component<
                                             RouteComponentProps<any> &
@@ -36,12 +53,15 @@ class Home extends React.Component<
            className={classes.top} 
         >
             <div className={classes.contents}>
-                <ContentCard /> 
+                {
+                    constantsList.map((c) => {
+                        return <ContentCard key={c.title} constants={c} />
+                    })
+                }
             </div>
         </div>
         );
     }
-
 
 }
 

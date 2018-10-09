@@ -21,21 +21,29 @@ const styles: StyleRules<'root'|'media'|'chip'|'chips'> = {
 
 type ClassNames = keyof typeof styles;
 
-const constants = {
-    img: require('../images/emh.png'),
-    title: 'endless monster house',
-    description: 'android 2d game ',
-    techs: [{name:'HTML5'},{name:'Javascript'},{name:'Three.js'},{name:'Cordova'},],
-    link: 'https://tmknym.itch.io/endless-monster-house'
+export interface IContents {
+    img: string,
+    title: string,
+    description: string,
+    techs: Tech[],
+    link: string
+}
+export interface Tech {
+    name: string
+}
+
+export interface CardPrpos  {
+    constants: IContents;
 }
 
 class ContentCard extends React.Component<
+                                            CardPrpos &
                                             RouteComponentProps<any> &
                                             WithStyles<ClassNames>, 
                                             {}> {
 
    public render(): JSX.Element {
-        const {classes} = this.props;
+        const {classes, constants} = this.props;
         return (
         <Card className={classes.root}>
             <CardActionArea onClick={this.link}>
@@ -65,6 +73,7 @@ class ContentCard extends React.Component<
     }
 
     private link = () => {
+        const {constants} = this.props;
         if (constants.link) {
             window.open(constants.link);
         }
@@ -72,6 +81,6 @@ class ContentCard extends React.Component<
 
 }
 
-const StyledContainer = withStyles<{} & ClassNames>(styles)(ContentCard);
+const StyledContainer = withStyles< CardPrpos &{} & ClassNames>(styles)(ContentCard);
 
 export default withRouter(StyledContainer);

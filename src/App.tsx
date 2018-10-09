@@ -58,7 +58,7 @@ class App extends React.Component<RouteComponentProps<any> & WithStyles<ClassNam
                 <Toolbar>
                 <div className={classes.header}>
                     <Typography variant="display3" className={classes.tab} >
-                        aknow2
+                        aKnow2
                     </Typography>
                     <div>
                     <Tabs
