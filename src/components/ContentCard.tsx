@@ -119,7 +119,7 @@ class ContentCard extends React.Component<
                                 <WebIcon />
                             </Icon>
                             <Typography variant="body2" color="inherit">
-                            Web apps
+                            Web app
                             </Typography>
                             </Button>
                         }
