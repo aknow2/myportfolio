@@ -1,32 +1,61 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
-import { RouteComponentProps, withRouter } from 'react-router';
-import { Card, CardActionArea, CardMedia, CardContent, Typography, Chip } from '@material-ui/core';
+import { Card,  CardMedia, CardContent, Typography, Chip, Icon, ButtonBase, Button } from '@material-ui/core';
+import WebIcon from "@material-ui/icons/Web";
+import PlayStoreImg from "../images/playstore.png";
+import AppStoreImg from "../images/appstore.svg";
+import githubImg from "../images/github.png";
 
-const styles: StyleRules<'root'|'media'|'chip'|'chips'> = {
+const styles: StyleRules<'root'|'media'|'chip'|'chips'|'githubBadge'|'playStoreBadge'|'storeLinks'|'title'> = {
     root: {
+        marginTop: 10,
         width: 300
+    },
+    title:{
+        padding: 10,
+        width:"100%",
+        display:"flex",
+        fontSize: 24,
+        justifyContent: "center",
+        fontWeight: 700,
+        height: 200
     },
     media: {
         height: 200
     },
     chip: {
-        margin: 10
+        margin: 2
     },
     chips: {
         display: 'flex',
         flexWrap: 'wrap'
+    },
+    playStoreBadge: {
+        width: 142,
+        height: 40
+    },
+    githubBadge: {
+      height: 41,
+      width: 100  
+    },
+    storeLinks: {
+        marginTop: 5
     }
 };
 
 type ClassNames = keyof typeof styles;
 
 export interface IContents {
-    img: string,
+    img?: string,
     title: string,
     description: string,
     techs: Tech[],
-    link: string
+    link: {
+        web?: string
+        android?: string
+        ios?: string
+        github?: string
+    }
 }
 export interface Tech {
     name: string
@@ -36,23 +65,30 @@ export interface CardPrpos  {
     constants: IContents;
 }
 
+
 class ContentCard extends React.Component<
                                             CardPrpos &
-                                            RouteComponentProps<any> &
                                             WithStyles<ClassNames>, 
                                             {}> {
 
    public render(): JSX.Element {
         const {classes, constants} = this.props;
+        const link = constants.link;
+
         return (
         <Card className={classes.root}>
-            <CardActionArea onClick={this.link}>
-                <CardMedia
-                    className={classes.media}
-                    image={constants.img}
-                    title={constants.title}
-                />
-                <CardContent>
+                {
+                    constants.img ? 
+                    <CardMedia
+                        className={classes.media}
+                        image={constants.img}
+                        title={constants.title}
+                    /> :
+                    <Typography className={classes.title}>
+                        {constants.title}
+                    </Typography>
+                }
+               <CardContent>
                     <Typography gutterBottom={true} variant="headline" component="h2">
                         {constants.title}
                     </Typography>
@@ -66,21 +102,53 @@ class ContentCard extends React.Component<
                         })
                     }
                     </div>
+                    <div className= {classes.storeLinks}>
+                        { link.android &&
+                            <ButtonBase onClick= {this.linkToPlayStore}>
+                                <img src={PlayStoreImg} className={classes.playStoreBadge} />
+                            </ButtonBase>
+                        } 
+                        { link.ios && 
+                            <ButtonBase onClick= {this.linkToAppStore}>
+                                <img src={AppStoreImg} />
+                            </ButtonBase>
+                        }
+                        { link.web && 
+                            <Button variant="outlined" color="inherit" onClick= {this.linkToWebPage} >
+                            <Icon >
+                                <WebIcon />
+                            </Icon>
+                            <Typography variant="body2" color="inherit">
+                            Web apps
+                            </Typography>
+                            </Button>
+                        }
+                        { link.github && 
+                            <ButtonBase  onClick={this.linkToGithub} >
+                                <img src={githubImg} className={classes.githubBadge} />                           
+                            </ButtonBase>
+                        }
+                    </div>
                 </CardContent>
-            </CardActionArea>
         </Card>
         );
     }
 
-    private link = () => {
-        const {constants} = this.props;
-        if (constants.link) {
-            window.open(constants.link);
-        }
+    private linkToPlayStore = () => {
+            window.open(this.props.constants.link.android);
+    }
+    private linkToAppStore = () => {
+            window.open(this.props.constants.link.ios);
+    }
+    private linkToWebPage = () => {
+            window.open(this.props.constants.link.web);
     }
 
+    private linkToGithub = () => {
+            window.open(this.props.constants.link.github);
+    }
 }
 
 const StyledContainer = withStyles< CardPrpos &{} & ClassNames>(styles)(ContentCard);
 
-export default withRouter(StyledContainer);
+export default StyledContainer;

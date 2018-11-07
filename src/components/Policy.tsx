@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
-import { RouteComponentProps, withRouter } from 'react-router';
 import { Typography, Paper } from '@material-ui/core';
 
 const styles: StyleRules<'root'|'paper'> = {
@@ -20,7 +19,6 @@ type ClassNames = keyof typeof styles;
 
 
 class Policy extends React.Component<
-                                            RouteComponentProps<any> &
                                             WithStyles<ClassNames>, 
                                             {}> {
 
@@ -103,4 +101,4 @@ aKnow2（以下、「乙」といいます。）は、乙が提供する全て�
 
 const StyledContainer = withStyles<{} & ClassNames>(styles)(Policy);
 
-export default withRouter(StyledContainer);
+export default StyledContainer;

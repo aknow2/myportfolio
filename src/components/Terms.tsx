@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
-import { RouteComponentProps, withRouter } from 'react-router';
 import { Typography, Paper } from '@material-ui/core';
 
 const styles: StyleRules<'root'|'paper'> = {
@@ -20,7 +19,6 @@ type ClassNames = keyof typeof styles;
 
 
 class Terms extends React.Component<
-                                            RouteComponentProps<any> &
                                             WithStyles<ClassNames>, 
                                             {}> {
 
@@ -143,4 +141,4 @@ class Terms extends React.Component<
 
 const StyledContainer = withStyles<{} & ClassNames>(styles)(Terms);
 
-export default withRouter(StyledContainer);
+export default StyledContainer;
