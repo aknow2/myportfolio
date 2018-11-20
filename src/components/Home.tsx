@@ -30,7 +30,7 @@ const constantsList: IContents[] = [
         techs: [{name:'Scratch3'},{name: 'Javascript'},{name: 'React.js'}],
         link: {
             github:'https://github.com/aknow2/scratch-gui/tree/customextensions',
-            web:'https://aknow2.com/scratch',
+            web:'https://aknow2.github.io/scratch',
         } 
     },
     {
