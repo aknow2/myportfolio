@@ -9,6 +9,7 @@ import githubImg from "../images/github.png";
 const styles: StyleRules<'root'|'media'|'chip'|'chips'|'githubBadge'|'playStoreBadge'|'storeLinks'|'title'> = {
     root: {
         marginTop: 10,
+        marginLeft: 15,
         width: 300
     },
     title:{

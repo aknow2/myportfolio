@@ -15,7 +15,6 @@ const styles: StyleRules<'top'|'contents'> = {
         width: '100%',
         marginTop: 20,
         display: 'flex',
-        justifyContent: 'space-evenly',
         flexWrap: 'wrap'
     }
 };
@@ -23,6 +22,16 @@ const styles: StyleRules<'top'|'contents'> = {
 type ClassNames = keyof typeof styles;
 
 const constantsList: IContents[] = [ 
+    {
+        title: 'Myriad api',
+        img: require('../images/myriad.png'),
+        description: 'Transform your smartphone into an API server',
+        techs: [{name:'react-native'},{name:'Typescript'},{name:'Node.js mobile'},],
+        link: {
+            android: 'https://play.google.com/store/apps/details?id=com.myriad',
+            github: 'https://myriadapi.github.io/ja/',
+        } 
+    },
     {
         img: require('../images/scratch.jpeg'),
         title: '[UNOFFICIAL] scratch3+extension ',
