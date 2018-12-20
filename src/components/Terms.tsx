@@ -11,6 +11,8 @@ const styles: StyleRules<'root'|'paper'> = {
     },
     paper: {
         width: '90%',
+        height: '60vh',
+        overflow: 'scroll',
         maxWidth: 700
     }
 };

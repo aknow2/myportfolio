@@ -2,20 +2,29 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
 import ContentCard, { IContents } from './ContentCard';
+import { GridList, Typography, Zoom } from '@material-ui/core';
 
-const styles: StyleRules<'top'|'contents'> = {
+const styles: StyleRules<'top'|'contents'|'header'| 'scroll'> = {
     top: {
         width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+        height: '100vh',
+    },
+    header: {
+        marginTop: 20,
+        marginBottom: 10,
+        marginLeft: 10,
     },
     contents: {
-        width: '100%',
-        marginTop: 20,
+        overflowX: 'hidden',
+        paddingBottom: 10,
         display: 'flex',
-        flexWrap: 'wrap'
+        justifyContent: 'center'
+    },
+    scroll: {
+        width: '98vw',
+        display: 'flex',
+        flexWrap: 'nowrap',
+        overflowX: 'scroll',
     }
 };
 
@@ -89,23 +98,35 @@ const constantsList: IContents[] = [
     },
 ];
 
+interface MyPrjProps {
+    titleIn: boolean;
 
-class Home extends React.Component<
-                                            WithStyles<ClassNames>, 
+}
+
+class MyPrj extends React.Component<MyPrjProps & WithStyles<ClassNames>, 
                                             {}> {
 
    public render(): JSX.Element {
-        const { classes } = this.props;
+        const { classes, titleIn } = this.props;
         return (
         <div 
            className={classes.top} 
         >
+        <Zoom in={titleIn}>
+            <div className={classes.header}>
+                <Typography variant="title" style={{color: '#C0C0C0'}}>
+                    My project
+                </Typography>
+            </div>
+        </Zoom>
             <div className={classes.contents}>
+            <GridList className={classes.scroll}>
                 {
                     constantsList.map((c) => {
                         return <ContentCard key={c.title} constants={c} />
                     })
                 }
+            </GridList>
             </div>
         </div>
         );
@@ -113,6 +134,6 @@ class Home extends React.Component<
 
 }
 
-const StyledContainer = withStyles<{} & ClassNames>(styles)(Home);
+const StyledContainer = withStyles<{} & ClassNames>(styles)(MyPrj);
 
 export default StyledContainer;

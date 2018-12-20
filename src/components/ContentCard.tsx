@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { StyleRules, WithStyles, withStyles } from '@material-ui/core/styles';
-import { Card,  CardMedia, CardContent, Typography, Chip, Icon, ButtonBase, Button } from '@material-ui/core';
+import { CardMedia, CardContent, Typography, Chip, Icon, ButtonBase, Button, GridListTile } from '@material-ui/core';
 import WebIcon from "@material-ui/icons/Web";
 import PlayStoreImg from "../images/playstore.png";
 import AppStoreImg from "../images/appstore.svg";
@@ -10,7 +10,9 @@ const styles: StyleRules<'root'|'media'|'chip'|'chips'|'githubBadge'|'playStoreB
     root: {
         marginTop: 10,
         marginLeft: 15,
-        width: 300
+        width: 300,
+        display: 'block',
+        backgroundColor: '#424242'
     },
     title:{
         padding: 10,
@@ -18,6 +20,7 @@ const styles: StyleRules<'root'|'media'|'chip'|'chips'|'githubBadge'|'playStoreB
         display:"flex",
         fontSize: 24,
         justifyContent: "center",
+        color: '#FFF',
         fontWeight: 700,
         height: 200
     },
@@ -77,7 +80,7 @@ class ContentCard extends React.Component<
         const link = constants.link;
 
         return (
-        <Card className={classes.root}>
+        <GridListTile className={classes.root}>
                 {
                     constants.img ? 
                     <CardMedia
@@ -85,15 +88,15 @@ class ContentCard extends React.Component<
                         image={constants.img}
                         title={constants.title}
                     /> :
-                    <Typography className={classes.title}>
+                    <Typography className={classes.title} style={{color: '#C0C0C0'}}>
                         {constants.title}
                     </Typography>
                 }
                <CardContent>
-                    <Typography gutterBottom={true} variant="headline" component="h2">
+                    <Typography gutterBottom={true} color="inherit" style={{color: '#C0C0C0'}} variant="headline" component="h2"  >
                         {constants.title}
                     </Typography>
-                    <Typography component="p">
+                    <Typography component="p" color="inherit" style={{color: '#C0C0C0'}}>
                         {constants.description}
                     </Typography>
                     <div className={classes.chips}>
@@ -117,9 +120,9 @@ class ContentCard extends React.Component<
                         { link.web && 
                             <Button variant="outlined" color="inherit" onClick= {this.linkToWebPage} >
                             <Icon >
-                                <WebIcon />
+                                <WebIcon style={{color: '#C0C0C0'}} />
                             </Icon>
-                            <Typography variant="body2" color="inherit">
+                            <Typography variant="body2" color="inherit" style={{color: '#C0C0C0'}}>
                             Web app
                             </Typography>
                             </Button>
@@ -131,7 +134,7 @@ class ContentCard extends React.Component<
                         }
                     </div>
                 </CardContent>
-        </Card>
+        </GridListTile>
         );
     }
 
