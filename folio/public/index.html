@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>React App</title>
+    <script id="point_vs" type="x-shader/x-vertex">
+      attribute float index;
+      uniform vec2 resolution;
+      uniform sampler2D texture;
+      uniform float pointScale;
+      void main(){
+        vec2 p = vec2(
+          mod(index, resolution.x) / resolution.x,
+          floor(index / resolution.x) / resolution.y
+        );
+        vec4 t = texture2D(texture, p);
+        gl_Position  = vec4(t.xy, 0.0, 1.0);
+        gl_PointSize = 0.1 + pointScale;
+      }
+    </script>
+    <script id="point_fs" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform vec4 ambient;
+      void main(){
+        gl_FragColor = ambient;
+      }
+    </script>
+    <script id="velocity_vs" type="x-shader/x-vertex">
+      attribute vec3 position;
+      void main(){
+        gl_Position = vec4(position, 1.0);
+      }
+    </script>
+    <script id="velocity_fs" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform vec2 resolution;
+      uniform sampler2D texture;
+      uniform vec2 mouse;
+      uniform bool mouseFlag;
+      uniform float velocity;
+      const float SPEED = 0.05;
+      void main(){
+        vec2 p = gl_FragCoord.xy / resolution;
+        vec4 t = texture2D(texture, p);
+        vec2 v = normalize(mouse - t.xy) * 0.2;
+        vec2 w = normalize(v + t.zw);
+        vec4 destColor = vec4(t.xy + w * SPEED * velocity, w);
+        if(!mouseFlag){destColor.zw = t.zw;}
+        gl_FragColor = destColor;
+      }
+    </script>
+    <script id="default_vs" type="x-shader/x-vertex">
+      attribute vec3 position;
+      void main(){
+        gl_Position = vec4(position, 1.0);
+      }
+    </script>
+    <script id="default_fs" type="x-shader/x-fragment">
+      precision mediump float;
+      uniform vec2 resolution;
+      void main(){
+        vec2 p = (gl_FragCoord.xy / resolution) * 2.0 - 1.0;
+        gl_FragColor = vec4(p, 0.0, 0.0);
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
