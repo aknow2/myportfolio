@@ -3,33 +3,33 @@ import './App.css';
 
 function hsva(h: number, s: number, v: number, a: number): number[] {
 	if(s > 1 || v > 1 || a > 1){return [];}
-	var th = h % 360;
-	var i = Math.floor(th / 60);
-	var f = th / 60 - i;
-	var m = v * (1 - s);
-	var n = v * (1 - s * f);
-	var k = v * (1 - s * (1 - f));
-	var color = [];
+	const th = h % 360;
+	const i = Math.floor(th / 60);
+	const f = th / 60 - i;
+	const m = v * (1 - s);
+	const n = v * (1 - s * f);
+	const k = v * (1 - s * (1 - f));
+	const color = [];
 	if(!(s > 0) && !(s < 0)){
 		color.push(v, v, v, a); 
 	} else {
-		var r = [v, n, m, m, k, v];
-		var g = [k, v, v, n, m, m];
-		var b = [m, m, k, v, v, n];
+		const r = [v, n, m, m, k, v];
+		const g = [k, v, v, n, m, m];
+		const b = [m, m, k, v, v, n];
 		color.push(r[i], g[i], b[i], a);
 	}
-	return color;
+	return [1, 0, 1, 1];
 }
 
 
 function renderParticle(c: HTMLCanvasElement){
-	var run = true;           // アニメーション継続フラグ
-	var velocity = 0;         // パーティクルの加速度係数
-	let mouseFlag = false;    // マウス操作のフラグ
-	let mousePositionX = 0.0; // マウス座標X（-1.0 から 1.0）
-	let mousePositionY = 0.0; // マウス座標Y（-1.0 から 1.0）
+	let run = true;           // アニメーション継続フラグ
+	let velocity = 0;         // パーティクルの加速度係数
+
 	c.width = Math.min(window.innerWidth, window.innerHeight);
-	c.height = c.width;
+  c.height = c.width;
+  let mousePositionX = Math.random()* 2 -1;
+	let mousePositionY = Math.random()* 2 -1; //Math.random()*c.height - c.height/2; // マウス座標Y（-1.0 から 1.0）
 	// WebGLコンテキストの初期化
   const gl = c.getContext('webgl') as WebGLRenderingContext;
   if (!gl) {
@@ -72,7 +72,6 @@ function renderParticle(c: HTMLCanvasElement){
 	vUniLocation[0] = gl.getUniformLocation(vPrg, 'resolution') as WebGLUniformLocation;
 	vUniLocation[1] = gl.getUniformLocation(vPrg, 'texture') as WebGLUniformLocation;
 	vUniLocation[2] = gl.getUniformLocation(vPrg, 'mouse') as WebGLUniformLocation;
-	vUniLocation[3] = gl.getUniformLocation(vPrg, 'mouseFlag') as WebGLUniformLocation;
 	vUniLocation[4] = gl.getUniformLocation(vPrg, 'velocity') as WebGLUniformLocation;
 	// テクスチャへの描き込みを行うシェーダ
 	v_shader = create_shader('default_vs') as WebGLShader;
@@ -86,37 +85,32 @@ function renderParticle(c: HTMLCanvasElement){
 	const dUniLocation: WebGLUniformLocation[] = [];
 	dUniLocation[0] = gl.getUniformLocation(dPrg, 'resolution') as WebGLUniformLocation;
 	// テクスチャの幅と高さ
-	var TEXTURE_WIDTH  = 512;
-	var TEXTURE_HEIGHT = 512;
-	var resolution = [TEXTURE_WIDTH, TEXTURE_HEIGHT];
+	const TEXTURE_WIDTH  = 512;
+	const TEXTURE_HEIGHT = 512;
+	const resolution = [TEXTURE_WIDTH, TEXTURE_HEIGHT];
 	// 頂点
-	var vertices = new Array(TEXTURE_WIDTH * TEXTURE_HEIGHT);
+	const vertices = new Array(TEXTURE_WIDTH * TEXTURE_HEIGHT);
 	// 頂点のインデックスを連番で割り振る
 	for(let i = 0, j = vertices.length; i < j; i++){
 		vertices[i] = i;
 	}
 	// 頂点情報からVBO生成
-	var vIndex = create_vbo(vertices) as WebGLBuffer;
-	var vVBOList = [vIndex];
-	// 板ポリ
-	var position = [
+	const vIndex = create_vbo(vertices) as WebGLBuffer;
+	const vVBOList = [vIndex];
+	const position = [
 		-1.0,  1.0,  0.0,
-		-1.0, -1.0,  0.0,
+		-1.0, -100.0,  0.0,
 		 1.0,  1.0,  0.0,
 		 1.0, -1.0,  0.0
 	];
-	var vPlane = create_vbo(position) as WebGLBuffer;
-	var planeVBOList = [vPlane];
-	// フレームバッファの生成
-	var backBuffer  = create_framebuffer(TEXTURE_WIDTH, TEXTURE_WIDTH, gl.FLOAT);
-	var frontBuffer = create_framebuffer(TEXTURE_WIDTH, TEXTURE_WIDTH, gl.FLOAT);
-	var flip = null;
-	// フラグ
+	const vPlane = create_vbo(position) as WebGLBuffer;
+	const planeVBOList = [vPlane];
+	let backBuffer  = create_framebuffer(TEXTURE_WIDTH, TEXTURE_WIDTH, gl.FLOAT);
+	let frontBuffer = create_framebuffer(TEXTURE_WIDTH, TEXTURE_WIDTH, gl.FLOAT);
+	let flip = null;
 	gl.disable(gl.BLEND);
 	gl.blendFunc(gl.ONE, gl.ONE);
-	// デフォルトの頂点情報を書き込む
-  // フレームバッファをバインド
-  gl.bindFramebuffer(gl.FRAMEBUFFER, backBuffer.f);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, backBuffer.frame);
   // ビューポートを設定
   gl.viewport(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
   // フレームバッファを初期化
@@ -129,15 +123,18 @@ function renderParticle(c: HTMLCanvasElement){
   gl.uniform2fv(dUniLocation[0], resolution);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, position.length / 3);
 	// レンダリング関数の呼び出し
-	var count = 0;
-	var ambient = [];
+	let count = 0;
+	let ambient = [];
 	render();
 	// 恒常ループ
 	function render(){
+
+    mousePositionX = mousePositionX + 0.001;
+	  mousePositionY = mousePositionY + 0.001; //Ma
 		// ブレンドは無効化
 		gl.disable(gl.BLEND);
 		// フレームバッファをバインド
-		gl.bindFramebuffer(gl.FRAMEBUFFER, frontBuffer.f);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, frontBuffer.frame);
 		// ビューポートを設定
 		gl.viewport(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 		// フレームバッファを初期化
@@ -146,13 +143,12 @@ function renderParticle(c: HTMLCanvasElement){
 		// プログラムオブジェクトの選択
 		gl.useProgram(vPrg);
 		// テクスチャとしてバックバッファをバインド
-		gl.bindTexture(gl.TEXTURE_2D, backBuffer.t);
+		gl.bindTexture(gl.TEXTURE_2D, backBuffer.texture);
 		// テクスチャへ頂点情報をレンダリング
 		set_attribute(planeVBOList, vAttLocation, vAttStride);
 		gl.uniform2fv(vUniLocation[0], resolution);
 		gl.uniform1i(vUniLocation[1], 0);
 		gl.uniform2fv(vUniLocation[2], [mousePositionX, mousePositionY]);
-		gl.uniform1i(vUniLocation[3], mouseFlag ? 1 : 0);
 		gl.uniform1f(vUniLocation[4], velocity);
 		gl.drawArrays(gl.TRIANGLE_STRIP, 0, position.length / 3);
 		// パーティクルの色
@@ -169,7 +165,7 @@ function renderParticle(c: HTMLCanvasElement){
 		// プログラムオブジェクトの選択
 		gl.useProgram(pPrg);
 		// フレームバッファをテクスチャとしてバインド
-		gl.bindTexture(gl.TEXTURE_2D, frontBuffer.t);
+		gl.bindTexture(gl.TEXTURE_2D, frontBuffer.texture);
 		// 頂点を描画
 		set_attribute(vVBOList, pAttLocation, pAttStride);
 		gl.uniform2fv(pUniLocation[0], resolution);
@@ -180,11 +176,7 @@ function renderParticle(c: HTMLCanvasElement){
 		// コンテキストの再描画
 		gl.flush();
 		// 加速度の調整
-		if(mouseFlag){
-			velocity = 1.0;
-		}else{
-			velocity *= 0.95;
-		}
+		velocity = 1.0;
 		// フレームバッファをフリップ
 		flip = backBuffer;
 		backBuffer = frontBuffer;
@@ -192,26 +184,6 @@ function renderParticle(c: HTMLCanvasElement){
 		// ループのために再帰呼び出し
 		if(run){requestAnimationFrame(render);}
 	}
-  // イベント処理
-  window.addEventListener('mousedown', () => {
-    mouseFlag = true;
-  })
-  window.addEventListener('mouseup', () => {
-		mouseFlag = false;
-  })
-
-  window.addEventListener('mousemove', (ev) => {
-    if(mouseFlag){
-			var cw = c.width;
-			var ch = c.height;
-			mousePositionX = (ev.clientX - c.offsetLeft - cw / 2.0) / cw * 2.0;
-			mousePositionY = -(ev.clientY - c.offsetTop - ch / 2.0) / ch * 2.0;
-		}
-  });
-
-  window.addEventListener('keydown', (ev) => {
-		run = (ev.keyCode !== 27);
-  });
 
 	// シェーダを生成する関数
 	function create_shader(id: string){
@@ -270,7 +242,7 @@ function renderParticle(c: HTMLCanvasElement){
 	// VBOを生成する関数
 	function create_vbo(data: number[]){
 		// バッファオブジェクトの生成
-		var vbo = gl.createBuffer();
+		const vbo = gl.createBuffer();
 		// バッファをバインドする
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
 		// バッファにデータをセット
@@ -283,7 +255,7 @@ function renderParticle(c: HTMLCanvasElement){
 	// VBOをバインドし登録する関数
 	function set_attribute(vbo: WebGLBuffer[], attL: number[], attS: number[]){
 		// 引数として受け取った配列を処理する
-		for(var i in vbo){
+		for(const i in vbo){
 			// バッファをバインドする
 			gl.bindBuffer(gl.ARRAY_BUFFER, vbo[i]);
 			// attributeLocationを有効にする
@@ -293,7 +265,7 @@ function renderParticle(c: HTMLCanvasElement){
 		}
 	}
 	// フレームバッファをオブジェクトとして生成する関数
-	function create_framebuffer(width: number, height: number, format: number){
+	function create_framebuffer(width: number, height: number, format?: number){
 		// フォーマットチェック
 		let textureFormat: number;
 		if(!format){
@@ -302,18 +274,18 @@ function renderParticle(c: HTMLCanvasElement){
 			textureFormat = format;
 		}
 		// フレームバッファの生成
-		var frameBuffer = gl.createFramebuffer();
+		const frameBuffer = gl.createFramebuffer();
 		// フレームバッファをWebGLにバインド
 		gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 		// 深度バッファ用レンダーバッファの生成とバインド
-		var depthRenderBuffer = gl.createRenderbuffer();
+		const depthRenderBuffer = gl.createRenderbuffer();
 		gl.bindRenderbuffer(gl.RENDERBUFFER, depthRenderBuffer);
 		// レンダーバッファを深度バッファとして設定
 		gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
 		// フレームバッファにレンダーバッファを関連付ける
 		gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRenderBuffer);
 		// フレームバッファ用テクスチャの生成
-		var fTexture = gl.createTexture();
+		const fTexture = gl.createTexture();
 		// フレームバッファ用のテクスチャをバインド
 		gl.bindTexture(gl.TEXTURE_2D, fTexture);
 		// フレームバッファ用のテクスチャにカラー用のメモリ領域を確保
@@ -323,14 +295,13 @@ function renderParticle(c: HTMLCanvasElement){
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		// フレームバッファにテクスチャを関連付ける
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fTexture, 0);
-		// 各種オブジェクトのバインドを解除
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fTexture, 0);
+
+    // reset
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		// オブジェクトを返して終了
-		return {f : frameBuffer, d : depthRenderBuffer, t : fTexture};
+		return {frame : frameBuffer, depth : depthRenderBuffer, texture : fTexture};
 	}
 }
 
