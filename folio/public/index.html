@@ -17,21 +17,49 @@
       uniform vec2 resolution;
       uniform sampler2D texture;
       uniform float pointScale;
+      uniform mat4 uModelViewMatrix;
+      uniform mat4 uProjectionMatrix;
+      varying vec4 vColor;
+
+      float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+      }
+      vec4 get_color(vec2 xy) {
+        float r = rand(xy);
+        if (r < 0.1) {
+          return vec4(0.0, 1.0, 1.0 , 1.0);
+        }
+        if (r < 0.3) {
+          return vec4(0.0, 1.0, 0.0 , 1.0);
+        }
+        if (r < 0.5) {
+          return vec4(1.0, 1.0, 0.0 , 1.0);
+        }
+        if (r < 0.7) {
+          return vec4(1.0, 0.0, 0.0 , 1.0);
+        }
+        if (r < 0.9) {
+          return vec4(1.0, 0.0, 1.0 , 1.0);
+        }
+        return vec4(1.0, 1.0, 1.0 , 1.0);
+      }
       void main(){
         vec2 p = vec2(
           mod(index, resolution.x) / resolution.x,
           floor(index / resolution.x) / resolution.y
         );
         vec4 t = texture2D(texture, p);
-        gl_Position  = vec4(t.xy, 0.0, 1.0);
-        gl_PointSize = 0.1 + pointScale;
+        gl_Position  = uProjectionMatrix * uModelViewMatrix * vec4(t.xy, 0.0, 1.0);
+        gl_PointSize = 0.1;
+        vColor = get_color(p);
       }
     </script>
     <script id="point_fs" type="x-shader/x-fragment">
       precision mediump float;
-      uniform vec4 ambient;
+      varying vec4 vColor;
+
       void main(){
-        gl_FragColor = ambient;
+        gl_FragColor = vColor;
       }
     </script>
     <script id="velocity_vs" type="x-shader/x-vertex">
@@ -45,17 +73,18 @@
       uniform vec2 resolution;
       uniform sampler2D texture;
       uniform vec2 mouse;
-      uniform bool mouseFlag;
       uniform float velocity;
-      const float SPEED = 0.05;
+      float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+      }
       void main(){
-        vec2 p = gl_FragCoord.xy / resolution;
-        vec4 t = texture2D(texture, p);
-        vec2 v = normalize(mouse - t.xy) * 0.2;
-        vec2 w = normalize(v + t.zw);
-        vec4 destColor = vec4(t.xy + w * SPEED * velocity, w);
-        if(!mouseFlag){destColor.zw = t.zw;}
-        gl_FragColor = destColor;
+        float index = gl_FragCoord.x * gl_FragCoord.y;
+        vec2 ps = gl_FragCoord.xy / resolution;
+        float x = gl_FragCoord.x / resolution.x * 2.0 - 1.0;
+        float y = gl_FragCoord.y / resolution.y * 2.0 - 1.0;
+        vec4 t = texture2D(texture, ps);
+
+        gl_FragColor = t;
       }
     </script>
     <script id="default_vs" type="x-shader/x-vertex">
@@ -68,23 +97,14 @@
       precision mediump float;
       uniform vec2 resolution;
       void main(){
-        vec2 p = (gl_FragCoord.xy / resolution) * 2.0 - 1.0;
-        gl_FragColor = vec4(p, 0.0, 0.0);
+        float y = (gl_FragCoord.y / resolution.y) * 2.0 - 1.0;
+        float x = (gl_FragCoord.x / resolution.x) * 2.0 - 1.0;
+        gl_FragColor = vec4(vec2(x, y), gl_FragCoord.x, 0);
       }
     </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
