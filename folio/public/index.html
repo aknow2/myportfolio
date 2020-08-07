@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="津市で働くソフトウェア開発者です。"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <meta
+      name="keywords"
+      content="IT, Web, フロントエンド, ソフトウェア, 開発, アプリ"
+    />
+    <link href="https://fonts.googleapis.com/css?family=Sawarabi+Gothic" rel="stylesheet">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>React App</title>
+    <title>aknow2</title>
     <script id="point_vs" type="x-shader/x-vertex">
       attribute float index;
       uniform vec2 resolution;
@@ -49,9 +53,14 @@
           floor(index / resolution.x) / resolution.y
         );
         vec4 t = texture2D(texture, p);
-        gl_Position  = uProjectionMatrix * uModelViewMatrix * vec4(t.xy, 0.0, 1.0);
+        vec4 pos = uProjectionMatrix * uModelViewMatrix * vec4(t.xyz, 1.0);
+        gl_Position = pos;
         gl_PointSize = 0.1;
-        vColor = get_color(p);
+        vec4 color = get_color(p);
+        vec4 camera = uProjectionMatrix * vec4(1.0);
+        float light = dot(normalize(camera.xyz), normalize(pos.xyz));
+        color.xyz = color.xyz/light; 
+        vColor = color;
       }
     </script>
     <script id="point_fs" type="x-shader/x-fragment">
@@ -72,18 +81,15 @@
       precision mediump float;
       uniform vec2 resolution;
       uniform sampler2D texture;
-      uniform vec2 mouse;
+      uniform vec2 seed;
       uniform float velocity;
-      float rand(vec2 co){
-        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-      }
       void main(){
         float index = gl_FragCoord.x * gl_FragCoord.y;
         vec2 ps = gl_FragCoord.xy / resolution;
-        float x = gl_FragCoord.x / resolution.x * 2.0 - 1.0;
-        float y = gl_FragCoord.y / resolution.y * 2.0 - 1.0;
+        float x = gl_FragCoord.x / resolution.x * 2.0 - 1.0 + cos(seed.x);
+        float y = gl_FragCoord.y / resolution.y * 2.0 - 1.0 + sin(seed.x);
         vec4 t = texture2D(texture, ps);
-
+        t.z = cos(15.0 * sqrt((x*x + y*y)));
         gl_FragColor = t;
       }
     </script>
@@ -97,8 +103,8 @@
       precision mediump float;
       uniform vec2 resolution;
       void main(){
-        float y = (gl_FragCoord.y / resolution.y) * 2.0 - 1.0;
-        float x = (gl_FragCoord.x / resolution.x) * 2.0 - 1.0;
+        float y = (gl_FragCoord.y / resolution.y) * 15.0 - 7.5;
+        float x = (gl_FragCoord.x / resolution.x) * 15.0 - 7.5;
         gl_FragColor = vec4(vec2(x, y), gl_FragCoord.x, 0);
       }
     </script>
