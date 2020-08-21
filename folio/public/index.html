@@ -16,96 +16,25 @@
     <link href="https://fonts.googleapis.com/css?family=Sawarabi+Gothic" rel="stylesheet">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>aknow2</title>
-    <script id="point_vs" type="x-shader/x-vertex">
-      attribute float index;
-      uniform vec2 resolution;
-      uniform sampler2D texture;
-      uniform float pointScale;
+    <script id="vs" type="x-shader/x-vertex">
+      attribute vec3 position;
+      attribute vec4 color;
       uniform mat4 uModelViewMatrix;
       uniform mat4 uProjectionMatrix;
       varying vec4 vColor;
 
-      float rand(vec2 co){
-        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-      }
-      vec4 get_color(vec2 xy) {
-        float r = rand(xy);
-        if (r < 0.1) {
-          return vec4(0.0, 1.0, 1.0 , 1.0);
-        }
-        if (r < 0.3) {
-          return vec4(0.0, 1.0, 0.0 , 1.0);
-        }
-        if (r < 0.5) {
-          return vec4(1.0, 1.0, 0.0 , 1.0);
-        }
-        if (r < 0.7) {
-          return vec4(1.0, 0.0, 0.0 , 1.0);
-        }
-        if (r < 0.9) {
-          return vec4(1.0, 0.0, 1.0 , 1.0);
-        }
-        return vec4(1.0, 1.0, 1.0 , 1.0);
-      }
       void main(){
-        vec2 p = vec2(
-          mod(index, resolution.x) / resolution.x,
-          floor(index / resolution.x) / resolution.y
-        );
-        vec4 t = texture2D(texture, p);
-        vec4 pos = uProjectionMatrix * uModelViewMatrix * vec4(t.xyz, 1.0);
+        vec4 pos = uProjectionMatrix * uModelViewMatrix * vec4(position, 1.0);
         gl_Position = pos;
         gl_PointSize = 0.1;
-        vec4 color = get_color(p);
-        vec4 camera = uProjectionMatrix * vec4(1.0);
-        float light = dot(normalize(camera.xyz), normalize(pos.xyz));
-        color.xyz = color.xyz/light; 
         vColor = color;
       }
     </script>
-    <script id="point_fs" type="x-shader/x-fragment">
+    <script id="fs" type="x-shader/x-fragment">
       precision mediump float;
       varying vec4 vColor;
-
       void main(){
         gl_FragColor = vColor;
-      }
-    </script>
-    <script id="velocity_vs" type="x-shader/x-vertex">
-      attribute vec3 position;
-      void main(){
-        gl_Position = vec4(position, 1.0);
-      }
-    </script>
-    <script id="velocity_fs" type="x-shader/x-fragment">
-      precision mediump float;
-      uniform vec2 resolution;
-      uniform sampler2D texture;
-      uniform vec2 seed;
-      uniform float velocity;
-      void main(){
-        float index = gl_FragCoord.x * gl_FragCoord.y;
-        vec2 ps = gl_FragCoord.xy / resolution;
-        float x = gl_FragCoord.x / resolution.x * 2.0 - 1.0 + cos(seed.x);
-        float y = gl_FragCoord.y / resolution.y * 2.0 - 1.0 + sin(seed.x);
-        vec4 t = texture2D(texture, ps);
-        t.z = cos(15.0 * sqrt((x*x + y*y)));
-        gl_FragColor = t;
-      }
-    </script>
-    <script id="default_vs" type="x-shader/x-vertex">
-      attribute vec3 position;
-      void main(){
-        gl_Position = vec4(position, 1.0);
-      }
-    </script>
-    <script id="default_fs" type="x-shader/x-fragment">
-      precision mediump float;
-      uniform vec2 resolution;
-      void main(){
-        float y = (gl_FragCoord.y / resolution.y) * 15.0 - 7.5;
-        float x = (gl_FragCoord.x / resolution.x) * 15.0 - 7.5;
-        gl_FragColor = vec4(vec2(x, y), gl_FragCoord.x, 0);
       }
     </script>
   </head>
