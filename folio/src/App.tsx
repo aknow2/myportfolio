@@ -7,9 +7,6 @@ function App() {
   return (
     <div className="App">
       <Background />
-			<div className="mask">
-				<Profile />
-			</div>
     </div>
   );
 }
