@@ -20,27 +20,29 @@ interface Buf {
 	x: number[];
 	y: number[];
 }
-const bezierFromPositions = (positions: [[number, number]], count: number) => {
-
+type Point = [number, number]
+const bezierFromPositions = (positions: Point[], count: number) => {
 	const buf = positions.reduce((acc, p) => {
 		acc.x.push(p[0]);
 		acc.y.push(p[1]);
 		return acc;
-	}, {x:[],y:[]} as Buf)
+	}, {x:[],y:[]} as Buf);
 
 	const step = 1/count;
 	const posX: number[] = []
 	const posY: number[] = []
-	for (let i=0; i<=1; i+step) {
-		posX.push(bezier(buf.x, i));
-		posY.push(bezier(buf.y, i));
+	for (let i=0; i< count; i++) {
+		const t = step*i;
+		posX.push(bezier([...buf.x], t));
+		posY.push(bezier([...buf.y], t));
 	}
 	return posX.flatMap((x, i) => {
 		return [x, posY[i], 0];
 	});
 };
 
-(window as any).bezier = bezier;
+(window as any).bez = bezier;
+(window as any).bezier = bezierFromPositions;
 
 function createShader(id: string, gl: WebGLRenderingContext){
 	let shader: WebGLShader;
@@ -145,8 +147,8 @@ const createMirrorHex = (basePosition: number[], baseColor: number[]) => {
 };
 
 function renderParticle(c: HTMLCanvasElement){
-	c.width = 500;
-  c.height = 500;
+	c.width = window.innerWidth;
+  c.height = window.innerHeight;
   const gl = c.getContext('webgl') as WebGLRenderingContext;
   if (!gl) {
     return;
@@ -182,41 +184,52 @@ function renderParticle(c: HTMLCanvasElement){
 
 
 	const drawPattern = (inputPos: number[], inputCol: number[]) => {
-		const { position, color, index } = createMirrorHex(inputPos, inputCol);
+		const { position, color } = createMirrorHex(inputPos, inputCol);
 		const pos = createVbo(position, gl) as WebGLBuffer;
 		const col = createVbo(color, gl) as WebGLBuffer;
-		const ibo = createIbo(index, gl);
-		
 		setAttribute(pos, attLocations.position, 3, gl);
 		setAttribute(col, attLocations.color, 4, gl);
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
 
-		for (let xi = 0; xi < 13; xi++) {
-			for (let yi = 0; yi < 13; yi++) {
+		for (let xi = 0; xi < 14; xi++) {
+			for (let yi = 0; yi < 14; yi++) {
 				const modelMat = mat4.create();
 				mat4.translate(modelMat, modelMat, [6*x * xi, yi * y * 2, 0])
 				gl.uniformMatrix4fv(uniLocations.model, false, modelMat);
 				gl.uniformMatrix4fv(uniLocations.projection, false, projectionMat);
-				gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_SHORT, 0);
+				gl.drawArrays(gl.TRIANGLES, 0, position.length/3);
+
 				mat4.translate(modelMat, modelMat, [3*x, y, 0])
 				gl.uniformMatrix4fv(uniLocations.model, false, modelMat);
 				gl.uniformMatrix4fv(uniLocations.projection, false, projectionMat);
-				gl.drawElements(gl.TRIANGLES, index.length, gl.UNSIGNED_SHORT, 0);
+				gl.drawArrays(gl.TRIANGLES, 0, position.length/3);
 			}
 		}
 	}
 
 	const rad = 30 * Math.PI/180;
-	const y = 0.3 * Math.cos(rad);
-	const x = 0.3 * Math.sin(rad);
+	const y = 0.25 * Math.cos(rad);
+	const x = 0.25 * Math.sin(rad);
 	const [x2, y2] = rotate(x, y, 60);
 	let counter = 0
 	const basePrj = mat4.create();
 	const projectionMat = mat4.create();
 	mat4.perspective(basePrj, fieldOfView, gl.canvas.width/ gl.canvas.height, zNear, zFar);
+	const srcBezPositions: Point[] = [
+		[x,y],
+		[x2*Math.random(),y2*Math.random()],
+		[x*Math.random(),y*Math.random()],
+		[x2*Math.random(),y2*Math.random()],
+		[x*Math.random(),y*Math.random()],
+		[x2*Math.random(),y2*Math.random()],
+		[x*Math.random(),y*Math.random()],
+		[x2,y2]
+	];
+	const pointLen = 30;
+	const bezPositions = bezierFromPositions(srcBezPositions, pointLen);
+
+	let colors: number[] = [];
 	const render = () => {
-		counter += 0.005;
-		mat4.rotate(projectionMat, basePrj, counter, [0 , 0, 1]);
+		mat4.rotate(projectionMat, basePrj, counter * 0.1, [0, 0, 1]);
 		mat4.translate(projectionMat, projectionMat, [-2 , -2, -1])
 		gl.disable(gl.BLEND);
 		gl.blendFunc(gl.ONE, gl.ONE);
@@ -224,24 +237,31 @@ function renderParticle(c: HTMLCanvasElement){
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
 		const c = Math.cos(counter);
 		const s = Math.sin(counter);
-		const basePositions2 = [
-			0.0, 0.0, 0.0,
-			x * c, y * s, 0,
-			x2 * s, y2 * c, 0,
-		];
-		const baseColor2 = [
-			1.0, 0.0, 0.0, 1.0,
-			1.0, 1.0, 0.0, 1.0,
-			1.0, 0.0, 1.0, 1.0,
-		]
-		drawPattern(basePositions2, baseColor2);
+		counter += 0.01;
+		const positions = bezPositions.flatMap((p, i) => {
+			if (i%6 === 0) {
+				return [x*c, y*s, 0, p];
+			}
+			return [p];
+		});
+		if (colors.length === 0) {
+			colors = [];
+			for(let i=0; i<positions.length/3 ;i++) {
+				if (i%3 === 0) {
+					colors.push(0.0, 0.0, Math.random(), 1.0);
+				} else if(i%3===1) {
+					colors.push(Math.random(), Math.random(), Math.random(), 1.0);
+				} else {
+					colors.push(0.0, Math.random(), 1.0, 1.0);
+				}
+			}
+		}
+		drawPattern(positions, colors);
 		gl.flush();
 		requestAnimationFrame(render);
 	}
-
 	requestAnimationFrame(render);
 }
 

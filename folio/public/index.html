@@ -25,9 +25,10 @@
 
       void main(){
         vec4 pos = uProjectionMatrix * uModelViewMatrix * vec4(position, 1.0);
+
+        float distance = sqrt(pow(position.x-0.5, 2.0) * pow(position.y-0.5, 2.0));
         gl_Position = pos;
-        gl_PointSize = 0.1;
-        vColor = color;
+        vColor = color * (1.0-distance);
       }
     </script>
     <script id="fs" type="x-shader/x-fragment">
