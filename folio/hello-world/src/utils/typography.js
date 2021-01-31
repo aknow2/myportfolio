@@ -1,7 +1,6 @@
 import Typography from "typography";
-import kirkhamTheme from "typography-theme-kirkham";
+import lincoin from "typography-theme-lincoln";
 
-const typography = new Typography(kirkhamTheme);
-
+const typography = new Typography(lincoin);
 export default typography;
 export const rhythm = typography.rhythm;

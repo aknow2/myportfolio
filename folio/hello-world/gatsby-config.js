@@ -6,9 +6,8 @@
 
 module.exports = {
   siteMetadata: {
-    title: `Pandas Eating Lots`,
+    title: `aKnow2`,
   },
-  /* Your site config here */
   plugins: [
     {
       resolve: `gatsby-source-filesystem`,
@@ -17,7 +16,9 @@ module.exports = {
         path: `${__dirname}/src/`,
       },
     },
+    `gatsby-plugin-sass`,
     `gatsby-plugin-emotion`,
+    `gatsby-transformer-remark`,
     {
       resolve: `gatsby-plugin-typography`,
       options: {
